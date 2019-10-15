@@ -1,0 +1,164 @@
+确认系统版本信息
+# cat /etc/redhat-release
+CentOS Linux release 7.4.1708 (Core)
+# uname -r
+3.10.0-693.5.2.el7.x86_64
+更新pip
+pip install --upgrade pip
+确认网卡个数和状态
+# ifconfig
+docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:f6:08:d6:4e  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ens160: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.89.127.124  netmask 255.255.255.0  broadcast 10.89.127.255
+        inet6 fe80::250:56ff:feaf:59c9  prefixlen 64  scopeid 0x20<link>
+        ether 00:50:56:af:59:c9  txqueuelen 1000  (Ethernet)
+        RX packets 2210369  bytes 3115500808 (2.9 GiB)
+        RX errors 0  dropped 64  overruns 0  frame 0
+        TX packets 1119319  bytes 78714342 (75.0 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ens192: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::250:56ff:feaf:d5a1  prefixlen 64  scopeid 0x20<link>
+        ether 00:50:56:af:d5:a1  txqueuelen 1000  (Ethernet)
+        RX packets 135069  bytes 20910078 (19.9 MiB)
+        RX errors 0  dropped 41  overruns 0  frame 0
+        TX packets 26  bytes 3296 (3.2 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 615917  bytes 188280438 (179.5 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 615917  bytes 188280438 (179.5 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+上面可以看出有两张网卡ens160和ens192，这里我用ens160做管理网，ens192做业务网，这里不需要配置ip，把ens160网卡up起来就好。
+
+查看主机名
+# hostname
+queens
+环境初始化
+关闭NetworkManager,firewalld,selinux
+# systemctl stop NetworkManager
+# systemctl disable NetworkManager
+Removed symlink /etc/systemd/system/multi-user.target.wants/NetworkManager.service.
+Removed symlink /etc/systemd/system/dbus-org.freedesktop.NetworkManager.service.
+Removed symlink /etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service.
+# systemctl stop firewalld
+# systemctl disable firewalld
+Removed symlink /etc/systemd/system/multi-user.target.wants/firewalld.service.
+Removed symlink /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
+# sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
+# setenforce 0
+# getenforce
+Permissive
+查看是否开启了虚拟化
+# egrep "vmx|svm" /proc/cpuinfo
+安装基础软件包
+配置配置epel源安装基础包
+# yum install epel-release
+# yum install axel vim git curl wget lrzsz gcc  python-devel python-pip
+安装配置docker
+安装docker
+# wget -O /etc/yum.repos.d/docker-ce.repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# yum install -y docker-ce
+配置docker
+# mkdir /etc/systemd/system/docker.service.d
+# tee /etc/systemd/system/docker.service.d/kolla.conf << 'EOF'
+[Service]
+MountFlags=shared
+EOF
+# vim /usr/lib/systemd/system/docker.service
+# ExecStart=/usr/bin/dockerd
+ExecStart=/usr/bin/dockerd --registry-mirror=http://f2d6cb40.m.daocloud.io --storage-driver=overlay2
+这里docker的文件系统我用overlay2
+
+启动docker
+# systemctl daemon-reload
+# systemctl restart docker
+# systemctl enable docker
+Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.
+# systemctl status docker
+# docker info
+安装ansible
+ansible版本必须在2.0以上
+# yum -y install ansible -y
+下载kolla-ansible，并安装配置
+# git clone https://github.com/openstack/kolla-ansible -b stable/queens
+# cd kolla-ansible/
+# cp -r etc/kolla/ /etc/kolla/
+# pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple
+配置globals.yml文件
+# egrep "^[^#]" /etc/kolla/globals.yml
+---
+kolla_base_distro: "centos"
+kolla_install_type: "source"
+openstack_release: "queens"
+kolla_internal_vip_address: "10.89.127.124"
+docker_namespace: "kolla"
+network_interface: "ens160"
+neutron_external_interface: "ens192"
+nova_compute_virt_type: "qemu"
+enable_chrony: "yes"
+enable_haproxy: "no"
+enable_horizon: "yes"
+ironic_dnsmasq_dhcp_range:
+tempest_image_id:
+tempest_flavor_ref_id:
+tempest_public_network_id:
+tempest_floating_network_name:
+
+##freezer部分
+enable_freezer:"yes"
+enable_heat:"yes"
+enable_horizon_freezer:"{{ enable_freezer | bool }}"
+
+##ceph部分
+enable_ceph: "yes"
+enable_ceph_rgw: "yes"
+# enable_swift: "no"
+enable_ceph_rgw_keystone: "yes"
+
+##cinder部分
+enable_cinder: "yes"
+说明：这里我直接在docker hub上拉镜像。如果是在虚拟机里安装 Kolla，希望可以在 OpenStack 平台上创建虚拟机，
+那么你需要在 globals.yml 文件中把 nova_compute_virt_type 配置项设置为 qemu，默认是 KVM。
+
+安装kolla
+生成密码文件
+# kolla-genpwd
+编辑 /etc/kolla/passwords.yml 文件，配置 keystone 管理员用户的密码。
+keystone_admin_password: 登陆密码
+同时，也是登录 Dashboard，admin 使用的密码，你可以根据自己需要进行修改。
+
+运行 prechecks 检查配置是否正确，如果有错误，可以先忽略。
+# kolla-ansible prechecks
+从docker hub上pull镜像
+# kolla-ansible pull
+部署openstack
+# kolla-ansible deploy
+创建环境变量文件
+# kolla-ansible post-deploy
+这样就创建了/etc/kolla/admin-openrc.sh 环境变量文件。
+
+安装 OpenStack Client 端
+# pip install --ignore-installed python-openstackclient
+编辑init-runonce文件,设置public network
+# vim /usr/share/kolla-ansible/init-runonce
+EXT_NET_CIDR='10.89.127.0/24'
+EXT_NET_RANGE='start=10.89.127.110,end=10.89.127.254'
+EXT_NET_GATEWAY='10.89.127.1'
+加载OpenStack CLI所需的环境变量
+# source /etc/kolla/admin-openrc.sh
+初始化部署
+# cd /usr/share/kolla-ansible/ && ./init-runonce
+登陆Dashboard
+用浏览器访问10.89.127.124登陆Dashboard
