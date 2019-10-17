@@ -298,4 +298,4 @@ export OS_AUTH_URL=http://10.89.127.124:5000/v3 <br>
 export OS_INTERFACE=internal <br>
 export OS_IDENTITY_API_VERSION=3 <br>
 ### 加载环境变量
-source /etc/cinder-openrc.sh
+#source /etc/cinder-openrc.sh
