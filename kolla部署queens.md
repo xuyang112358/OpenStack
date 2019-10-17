@@ -11,7 +11,7 @@ CentOS Linux release 7.4.1708 (Core)
 #pip install --upgrade pip
 ### 网卡配置
 #cd /etc/sysconfig/network-scripts
->> ens192:
+>> ens160:
         TYPE="Ethernet"<br>
         PROXY_METHOD="none"<br>
         BROWSER_ONLY="no"<br>
