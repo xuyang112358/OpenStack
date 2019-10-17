@@ -8,42 +8,47 @@ CentOS Linux release 7.4.1708 (Core)
 #uname -r
 3.10.0-693.5.2.el7.x86_64
 ### 更新pip
-pip install --upgrade pip
-### 确认网卡个数和状态
-ifconfig
->> docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500<br>
-inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255<br>
-ether 02:42:f6:08:d6:4e  txqueuelen 0  (Ethernet)<br>
-RX packets 0  bytes 0 (0.0 B)<br>
-RX errors 0  dropped 0  overruns 0  frame 0<br>
-TX packets 0  bytes 0 (0.0 B)<br>
-TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0<br>
+#pip install --upgrade pip
+### 网卡配置
+#cd /etc/sysconfig/network-scripts
+>> ens192:
+        TYPE="Ethernet"
+        PROXY_METHOD="none"
+        BROWSER_ONLY="no"
+        BOOTPROTO="none"
+        DEFROUTE="yes"
+        IPV4_FAILURE_FATAL="no"
+        IPV6INIT="yes"
+        IPV6_AUTOCONF="yes"
+        IPV6_DEFROUTE="yes"
+        IPV6_FAILURE_FATAL="no"
+        IPV6_ADDR_GEN_MODE="stable-privacy"
+        NAME="ens160"
+        UUID="cb175c17-9c1a-40dc-a018-8dee550552c5"
+        DEVICE="ens160"
+        ONBOOT="yes"
+        IPADDR="10.89.127.124"
+        PREFIX="24"
+        GATEWAY="10.89.127.254"
+        DNS1="114.114.114.114"
+        IPV6_PRIVACY="no"
 
->> ens160: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500<br>
-        inet 10.89.127.124  netmask 255.255.255.0  broadcast 10.89.127.255<br>
-        inet6 fe80::250:56ff:feaf:59c9  prefixlen 64  scopeid 0x20<link><br>
-        ether 00:50:56:af:59:c9  txqueuelen 1000  (Ethernet)<br>
-        RX packets 2210369  bytes 3115500808 (2.9 GiB)<br>
-        RX errors 0  dropped 64  overruns 0  frame 0<br>
-        TX packets 1119319  bytes 78714342 (75.0 MiB)<br>
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0<br>
-
->> ens192: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500<br>
-        inet6 fe80::250:56ff:feaf:d5a1  prefixlen 64  scopeid 0x20<link><br>
-        ether 00:50:56:af:d5:a1  txqueuelen 1000  (Ethernet)<br>
-        RX packets 135069  bytes 20910078 (19.9 MiB)<br>
-        RX errors 0  dropped 41  overruns 0  frame 0<br>
-        TX packets 26  bytes 3296 (3.2 KiB)<br>
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0<br>
-
->> lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536<br>
-        inet 127.0.0.1  netmask 255.0.0.0<br>
-        inet6 ::1  prefixlen 128  scopeid 0x10<host><br>
-        loop  txqueuelen 1000  (Local Loopback)<br>
-        RX packets 615917  bytes 188280438 (179.5 MiB)<br>
-        RX errors 0  dropped 0  overruns 0  frame 0<br>
-        TX packets 615917  bytes 188280438 (179.5 MiB)<br>
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0<br>
+>> ens192:
+        TYPE=Ethernet
+        PROXY_METHOD=none
+        BROWSER_ONLY=no
+        BOOTPROTO=dhcp
+        DEFROUTE=yes
+        IPV4_FAILURE_FATAL=no
+        IPV6INIT=yes
+        IPV6_AUTOCONF=yes
+        IPV6_DEFROUTE=yes
+        IPV6_FAILURE_FATAL=no
+        IPV6_ADDR_GEN_MODE=stable-privacy
+        NAME=ens192
+        UUID=0d0220be-2879-40a9-8ad8-2020c8d59fd4
+        DEVICE=ens192
+        ONBOOT=no
         
 * 上面可以看出有两张网卡ens160和ens192，这里我用ens160做管理网，ens192做业务网，这里不需要配置ip，把ens160网卡up起来就好。
 
@@ -115,7 +120,7 @@ ansible版本必须在2.0以上<br>
 #cp -r etc/kolla/ /etc/kolla/<br>
 #pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple<br>
 ### 配置globals.yml文件
-vim /etc/kolla/globals.yml<br>
+#vim /etc/kolla/globals.yml<br>
 
 ---<br>
 kolla_base_distro: "centos"<br>
