@@ -180,8 +180,8 @@ EXT_NET_GATEWAY='10.89.127.1'<br>
 登陆Dashboard<br>
 用浏览器访问10.89.127.124登陆Dashboard<br>
 
-## 部署额外组件
-### swift部分<br> （存疑）
+# 部署额外组件
+## swift部分<br> （存疑）
 打swift标签<br>
 #parted /dev/sdb -s -- mklabel gpt mkpart KOLLA_SWIFT_DATA 1 -1 <br>
 生成rings，执行如下脚本<br>
@@ -261,7 +261,7 @@ enable_swift: "yes"<br>
 执行部署<br>
 #kolla-ansible deploy<br>
 
-### ceph部分<br>
+## ceph部分<br>
 关闭所有swift的docker
 创建 /etc/kolla/config/ceph.conf<br>
 打cepf标签<br>
@@ -276,10 +276,26 @@ enable_ceph_rgw_keystone: "yes"<br>
 执行部署<br>
 #kolla-ansible deploy<br>
 
-### cinder部分<br>
+## cinder部分<br>
 #vim /etc/kolla/globals.yml<br>
 
 enable_cinder: "yes"<br>
 
 执行部署<br>
 #kolla-ansible deploy<br>
+### 进入容器
+#docker exec -it cinder_api bash
+### 配置环境变量
+#vi /etc/cinder-openrc.sh
+
+export OS_PROJECT_DOMAIN_NAME=default <br>
+export OS_USER_DOMAIN_NAME=default <br>
+export OS_PROJECT_NAME=admin <br>
+export OS_TENANT_NAME=admin <br>
+export OS_USERNAME=admin <br>
+export OS_PASSWORD=hdu629 <br>
+export OS_AUTH_URL=http://10.89.127.124:5000/v3 <br>
+export OS_INTERFACE=internal <br>
+export OS_IDENTITY_API_VERSION=3 <br>
+### 加载环境变量
+source /etc/cinder-openrc.sh
