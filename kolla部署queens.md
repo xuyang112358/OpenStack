@@ -284,7 +284,9 @@ enable_cinder: "yes"<br>
 执行部署<br>
 #kolla-ansible deploy<br>
 ### 进入容器
-#docker exec -it cinder_api bash
+#docker exec -it cinder_api bash<br>
+### 显示某个容器的所有log<br>
+#docker logs [OPTIONS] <CONTAINER><br>
 ### 配置环境变量
 #vi /etc/cinder-openrc.sh
 
