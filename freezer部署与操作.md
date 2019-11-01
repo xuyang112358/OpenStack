@@ -150,7 +150,7 @@ v获取存储介质中的容器名，大小，对象数等信息，对应的acti
 * 删除备份<br>
 #freezer-agent --action admin --nova-inst-id ID --backup-name nova_backup --engine nova --remove-from-date 2019-10-19T00:00:00<br>
 * 说明：
-* --nova-inst-id 实例的id
+* --nova-inst-id 备份的id
 * --remove-from-date 删除该时间之前的备份
 ### 查看freezer用户
 #freezer client-list
