@@ -37,10 +37,7 @@ rbd snap rollback vms/<instance_id>_disk@time1 <br>
 （3）导入虚拟机法：<br>
 	<1>创建一个虚拟机（跟原虚拟机同样配置）<br>
 	<2>导入差异数据到新建虚拟机的根磁盘，注意这里的导入顺序，先恢复到time1，再恢复到time2<br>
-	
-	rbd import-diff /test_diff/time1_diff_file volumes/volume_<instance_id><br>
-	
-	rbd import-diff /test_diff/time1_time2 volumes/volume_<instance_id><br>
-	
-	这时再打开虚拟机就恢复完成了<br>
+rbd import-diff /test_diff/time1_diff_file volumes/volume_<instance_id><br>
+rbd import-diff /test_diff/time1_time2 volumes/volume_<instance_id><br>
+这时再打开虚拟机就恢复完成了<br>
   
